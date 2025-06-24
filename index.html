@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIRHORN</title>
+    <style>
+      html {
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      button {
+        background: #fff;
+        font-size: 10rem;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.1s ease;
+      }
+
+      button:active {
+        transform: scale(0.75);
+      }
+    </style>
+  </head>
+
+  <body>
+    <button aria-label="play airhorn">🔊</button>
+    <audio src="audio.mp3" preload="auto"></audio>
+
+    <script>
+      const button = document.querySelector('button');
+      const audio = document.querySelector('audio');
+
+      button.addEventListener('click', () => {
+        audio.currentTime = 0;
+        audio.play();
+      });
+    </script>
+  </body>
+</html>
