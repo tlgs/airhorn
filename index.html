@@ -28,16 +28,53 @@
 
   <body>
     <button aria-label="play airhorn">🔊</button>
-    <audio src="audio.mp3" preload="auto"></audio>
 
     <script>
-      const button = document.querySelector('button');
-      const audio = document.querySelector('audio');
+      // this is unfortunately a bit more complicated than anticipated.
+      // mobile browser environments impose many restrictions while playing audio 
+      // when using plain HTML5 audio elements, so the more powerful
+      // Web Audio API is used.
+      //
+      // to ensure the intended behavior a couple things are done in this script:
+      //   1. we create the audio context and prepare the buffer ONCE.
+      //   2. we keep track of the previously running audio buffer to make sure
+      //      we can cleanly shut it down and start playing the track from the beginning.
 
-      button.addEventListener('click', () => {
-        audio.currentTime = 0;
-        audio.play();
-      });
+      const button = document.querySelector('button');
+
+      let [ctx, buf, prev] = [null, null, null];
+
+      async function handle(event) {
+        event.preventDefault();
+        if (!ctx) {  
+          ctx = new AudioContext();
+          
+          const r = await fetch('audio.mp3');
+          const abuf = await r.arrayBuffer();
+          buf = await ctx.decodeAudioData(abuf);
+        }
+
+        if (prev) {
+          prev.stop();
+          prev.disconnect();
+          prev = null;
+        }
+
+        const curr = ctx.createBufferSource();
+        curr.buffer = buf;
+        curr.connect(ctx.destination);
+        curr.start(0);
+
+        curr.onended = () => {
+          if (prev === curr) {
+            prev = null;
+          }
+        };
+
+        prev = curr;
+      }
+
+      button.addEventListener('click', handle);
     </script>
   </body>
 </html>
