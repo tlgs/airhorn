@@ -36,45 +36,32 @@
       // Web Audio API is used.
       //
       // to ensure the intended behavior a couple things are done in this script:
-      //   1. we create the audio context and prepare the buffer ONCE.
+      //   1. we lazily create the audio context and prepare the buffer.
       //   2. we keep track of the previously running audio buffer to make sure
       //      we can cleanly shut it down and start playing the track from the beginning.
 
       const button = document.querySelector('button');
+      let context, buffer, prev;
 
-      let [ctx, buf, prev] = [null, null, null];
-
-      async function handle(event) {
+      button.addEventListener('click', async (event) => {
         event.preventDefault();
-        if (!ctx) {  
-          ctx = new AudioContext();
-          
-          const r = await fetch('audio.mp3');
-          const abuf = await r.arrayBuffer();
-          buf = await ctx.decodeAudioData(abuf);
+
+        if (!context) {
+          context = new AudioContext();
+          const response = await fetch('audio.mp3');
+          buffer = await context.decodeAudioData(await response.arrayBuffer());
         }
 
-        if (prev) {
-          prev.stop();
-          prev.disconnect();
-          prev = null;
-        }
+        prev?.stop();
 
-        const curr = ctx.createBufferSource();
-        curr.buffer = buf;
-        curr.connect(ctx.destination);
-        curr.start(0);
-
-        curr.onended = () => {
-          if (prev === curr) {
-            prev = null;
-          }
-        };
+        const curr = context.createBufferSource();
+        curr.buffer = buffer;
+        curr.connect(context.destination);
+        curr.start();
+        curr.onended = () => {if (prev === curr) { prev = null; } };
 
         prev = curr;
-      }
-
-      button.addEventListener('click', handle);
+      });
     </script>
   </body>
 </html>
