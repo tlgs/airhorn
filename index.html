@@ -31,7 +31,7 @@
 
     <script>
       // this is unfortunately a bit more complicated than anticipated.
-      // mobile browser environments impose many restrictions while playing audio 
+      // mobile browser environments impose many restrictions while playing audio
       // when using plain HTML5 audio elements, so the more powerful
       // Web Audio API is used.
       //
@@ -40,15 +40,15 @@
       //   2. we keep track of the previously running audio buffer to make sure
       //      we can cleanly shut it down and start playing the track from the beginning.
 
-      const button = document.querySelector('button');
+      const button = document.querySelector("button");
       let context, buffer, prev;
 
-      button.addEventListener('click', async (event) => {
+      button.addEventListener("click", async (event) => {
         event.preventDefault();
 
         if (!context) {
           context = new AudioContext();
-          const response = await fetch('audio.mp3');
+          const response = await fetch("audio.mp3");
           buffer = await context.decodeAudioData(await response.arrayBuffer());
         }
 
@@ -58,7 +58,11 @@
         curr.buffer = buffer;
         curr.connect(context.destination);
         curr.start();
-        curr.onended = () => {if (prev === curr) { prev = null; } };
+        curr.onended = () => {
+          if (prev === curr) {
+            prev = null;
+          }
+        };
 
         prev = curr;
       });
